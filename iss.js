@@ -13,12 +13,15 @@ const nextISSTimesForMyLocation = (callback) => {
   // fetches the IP
   fetchMyIP((err, ip) => {
     if (err) return callback(err, null);
+    
     // once we get IP, we fetch the coordinates
     fetchCoordsByIP(ip, (err, coords) => {
       if (err) return callback(err, null);
+      
       // once we have the coordinates we fetch fly over times
       fetchISSFlyOverTimes(coords, (err, data) => {
         if (err) return callback(err, null);
+        
         // return the final data via callback
         return callback(err, data);
       });
@@ -28,58 +31,57 @@ const nextISSTimesForMyLocation = (callback) => {
 
 const fetchMyIP = (callback) => {
   request('https://api.ipify.org?format=json', (err, response, body) => {
+    
     // error if invalid domain, user is offline etc.
-    if (err) {
-      callback(err, null);
-      return;
-    }
+    if (err) callback(err, null);
+
     // error if code is not 200, assume server error
     if (response.statusCode !== 200) {
       const msg = (`Status Code: ${response.statusCode} when fetching IP. Response: ${body}`);
       callback(Error(msg), null);
       return;
     }
+
     // all good, data received
-    const ip = JSON.parse(body);
+    const ip = JSON.parse(body)['ip'];
     return callback(err, ip);
   });
 };
 
 const fetchCoordsByIP = (ip, callback) => {
-  request(`https://ipvigilante.com/${ip['ip']}`, (err, response, body) => {
+  request(`https://ipvigilante.com/${ip}`, (err, response, body) => {
+    
     // error if invalid domain, user is offline etc.
-    if (err) {
-      callback(err, null);
-      return;
-    }
+    if (err) callback(err, null);
+
     // error if code is not 200, assume server error
     if (response.statusCode !== 200) {
       const msg = (`Status Code: ${response.statusCode} when fetching coordinates. Response: ${body}`);
       callback(Error(msg), null);
       return;
     }
+    
     // all good, data received
-    const data = JSON.parse(body);
-    const coords = { latitude: data['data']['latitude'], longitude: data['data']['longitude'] };
-    return callback(err, coords);
+    const { latitude, longitude } = JSON.parse(body)['data'];
+    return callback(err, { latitude, longitude });
   });
 };
 
-const fetchISSFlyOverTimes = (coords, callback) => {
-  request(`http://api.open-notify.org/iss-pass.json?lat=${coords['latitude']}&lon=${coords['longitude']}`, (err, response, body) => {
+const fetchISSFlyOverTimes = ({ latitude, longitude }, callback) => {
+  request(`http://api.open-notify.org/iss-pass.json?lat=${latitude}&lon=${longitude}`, (err, response, body) => {
+    
     // error if invalid domain, user is offline etc.
-    if (err) {
-      callback(err, null);
-      return;
-    }
+    if (err) callback(err, null);
+
     // error if code is not 200, assume server error
     if (response.statusCode !== 200) {
       const msg = (`Status Code: ${response.statusCode} when fetching fly over times. Response: ${body}`);
       callback(Error(msg), null);
       return;
     }
+
     // all good, data received
-    const data = JSON.parse(body);
+    const data = JSON.parse(body)['response'];
     return callback(err, data);
   });
 };
