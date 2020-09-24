@@ -8,7 +8,7 @@ const nextISSTimesForMyLocation = () => {
     const { response } = JSON.parse(data);
     return response;
   });
-}
+};
 
 const fetchMyIP = () => {
   return request('https://api.ipify.org?format=json');
