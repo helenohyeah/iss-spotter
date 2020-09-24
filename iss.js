@@ -39,4 +39,8 @@ const fetchCoordsByIp = (ip, callback) => {
   });
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIp };
+const fetchISSFlyOverTimes = (coords, callback) => {
+  // ...
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIp, fetchISSFlyOverTimes };
